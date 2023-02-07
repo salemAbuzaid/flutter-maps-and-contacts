@@ -26,22 +26,43 @@ Widget getInfoWindow(BuildContext context, Station station) {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    child: Text(
-                      station.streetName,
-                    ),
+                Container(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "Street name: ${station.streetName}",
                   ),
+                ),
+                Container(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "Access restriction: ${station.accessRestriction}",
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        "Available ports: ${station.availablePorts()}/ ${station.ports.length}",
+                      ),
+                    ),
+                    Container(
+                      child: Icon(
+                        Icons.circle,
+                        size: 17,
+                        color: _getColor(
+                            station.availablePorts(), station.ports.length),
+                      ),
+                    )
+                  ],
                 ),
               ],
             ),
           ),
         ),
       ),
-      
       Triangle.isosceles(
         edge: Edge.BOTTOM,
         child: Container(
@@ -50,7 +71,15 @@ Widget getInfoWindow(BuildContext context, Station station) {
           height: 10.0,
         ),
       ),
-      
     ],
   );
+}
+
+Color _getColor(int availablePorts, int portsLength) {
+  if (availablePorts == portsLength) {
+    return Colors.green;
+  } else if (availablePorts > 0 && availablePorts < portsLength) {
+    return Colors.orange;
+  }
+  return Colors.red;
 }

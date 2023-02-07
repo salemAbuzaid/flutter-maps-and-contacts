@@ -14,4 +14,5 @@ class Port {
     connectorType = portJson['connector_type'];
     status = portJson['port_status'][0]['status'];
   }
+
 }
