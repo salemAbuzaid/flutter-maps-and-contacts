@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:clippy_flutter/clippy_flutter.dart';
+import 'package:progetto_pilota/data/port.dart';
 import 'package:progetto_pilota/data/station.dart';
 
 Widget getInfoWindow(BuildContext context, Station station) {
@@ -49,14 +50,23 @@ Widget getInfoWindow(BuildContext context, Station station) {
                       ),
                     ),
                     Container(
-                      child: Icon(
-                        Icons.circle,
-                        size: 17,
-                        color: _getColor(
-                            station.availablePorts(), station.ports.length),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 6.0),
+                        child: Icon(
+                          Icons.circle,
+                          size: 17,
+                          color: _getColor(
+                              station.availablePorts(), station.ports.length),
+                        ),
                       ),
                     )
                   ],
+                ),
+                Container(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "Charging power: ${_getPowerList(station.ports)}",
+                  ),
                 ),
               ],
             ),
@@ -73,6 +83,16 @@ Widget getInfoWindow(BuildContext context, Station station) {
       ),
     ],
   );
+}
+
+_getPowerList(List<Port> ports) {
+  List<String> powerList = [];
+  ports.forEach((port) {
+    if (!powerList.contains("${port.power.toString()} KW")) {
+      powerList.add("${port.power.toString()} KW");
+    }
+  });
+  return powerList;
 }
 
 Color _getColor(int availablePorts, int portsLength) {

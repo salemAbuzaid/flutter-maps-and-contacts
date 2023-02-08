@@ -4,13 +4,13 @@ import 'dart:ui' as ui;
 import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:progetto_pilota/data/port.dart';
 import 'package:progetto_pilota/data/station.dart';
 import 'package:progetto_pilota/shared/info_window.dart';
 import 'package:progetto_pilota/shared/menu_drawer.dart';
 import 'package:progetto_pilota/data/http_helper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:clippy_flutter/clippy_flutter.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -37,59 +37,44 @@ class _MapScreenState extends State<MapScreen> {
   final CustomInfoWindowController _customInfoWindowController =
       CustomInfoWindowController();
 
+  final TextEditingController txtMinPower = TextEditingController();
+
+  final TextEditingController txtMaxPower = TextEditingController();
+
   List<Station> stations = [];
+  List<Station> filteredStations = [];
 
 // Creates a custom location icon
   void addCustomIcon() {
-    getBytesFromAsset("assets/location1.png", 150).then((markerLocationIcon) {
+    getBytesFromAsset("assets/location1.png", 120).then((markerLocationIcon) {
       setState(() {
         locationIcon = BitmapDescriptor.fromBytes(markerLocationIcon);
       });
     });
-    /*  BitmapDescriptor.fromAssetImage(
-            const ImageConfiguration(), "assets/location.png")
-        .then(
-      (icon) {
-        setState(() {
-          locationIcon = icon;
-        });
-      },
-    ); */
   }
 
-  Future<void> setStationsMarkers() async {
-    await getStations();
+  setStationsMarkers() {
+    // await getStations();
     addCustomIcon();
     String description = '';
-    for (var station in stations) {
+
+    for (var station in filteredStations) {
       description = "Access Restriction: ${station.accessRestriction}\n Ports:";
       MarkerId id = MarkerId(station.id);
       _markers[station.id] = Marker(
         markerId: id,
         position: LatLng(station.lat, station.lng),
-/*         onTap: (() => showDialog(
-              context: context,
-              builder: (context) => _buildPopupDialog(context))), */
-/*         infoWindow: InfoWindow(
-          title: station.streetName,
-          snippet: description,
-          onTap: () => showDialog(
-              context: context,
-              builder: (context) => _buildPopupDialog(context)),
-        ), */
         onTap: () {
-
           _customInfoWindowController.addInfoWindow!(
             getInfoWindow(context, station),
-/*             IconButton(
-              icon: Icon(Icons.ac_unit),
-              onPressed: () {},
-            ) */
             LatLng(station.lat, station.lng),
           );
         },
       );
     }
+/*     setState(() {
+      _markers;
+    }); */
   }
 
 // gets stations from the backend server
@@ -116,10 +101,10 @@ class _MapScreenState extends State<MapScreen> {
 
         MarkerId id = MarkerId("MyLocation");
         _markers["MyLocation"] = Marker(
-            markerId: id,
-            position: /* LatLng(lat, lng) */ _center,
-            icon: locationIcon,
-           );
+          markerId: id,
+          position: /* LatLng(lat, lng) */ _center,
+          icon: locationIcon,
+        );
       });
       mapcontroller?.animateCamera(CameraUpdate.newLatLng(_center));
     });
@@ -132,7 +117,7 @@ class _MapScreenState extends State<MapScreen> {
 
     addCustomIcon();
     // getStations();
-    setStationsMarkers();
+    // setStationsMarkers();
     updateUserLocation();
     // _customInfoWindowController = CustomInfoWindowController();
     // mapcontroller?.animateCamera(CameraUpdate.newLatLng(_center));
@@ -243,9 +228,12 @@ class _MapScreenState extends State<MapScreen> {
         ));
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  Future<void> _onMapCreated(GoogleMapController controller) async {
     mapcontroller = controller;
     _customInfoWindowController.googleMapController = controller;
+    await getStations();
+    filteredStations = List<Station>.from(stations);
+    setStationsMarkers();
     updateUserLocation();
   }
 
@@ -256,10 +244,6 @@ class _MapScreenState extends State<MapScreen> {
     _customInfoWindowController.dispose();
     stations.clear();
     _markers.clear();
-/*     _markers.forEach((key, value) {
-      log('here see the remaining markers...');
-      log(key.toString() + " " + value.toString());
-    }); */
     super.dispose();
   }
 
@@ -316,34 +300,105 @@ class _MapScreenState extends State<MapScreen> {
           child: IconButton(
             icon: Icon(Icons.filter_alt),
             onPressed: () {
-              showDialog(
+/*               showDialog(
                   context: context,
-                  builder: (context) => _buildPopupDialog(context));
+                  builder: (context) => _buildPopupDialog(context)); */
+              _buildPopupDialog(context);
             },
           )),
     );
   }
 
-  Widget _buildPopupDialog(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Filter Stations'),
-      content: Row(
-        children: [
-          Column(),
-          Column(),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text(
-            'Close',
-            style: TextStyle(color: Colors.grey),
-          ),
-        )
-      ],
-    );
+  Future<dynamic> _buildPopupDialog(BuildContext context) async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Filter Stations'),
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+/*                   GestureDetector(
+                    onTap: () {
+                      filteredStations = stations;
+                      setState(() {});
+                    },
+                    child: Container(
+                      child: Row(
+                        children: [
+                          Icon(Icons.close),
+                          Text("Filter")
+                        ],
+                      ),
+                    ),
+                  ), */
+                  TextField(
+                    controller: txtMinPower,
+                    decoration: InputDecoration(hintText: "Min Power In KW"),
+                  ),
+                  TextField(
+                    controller: txtMaxPower,
+                    decoration: InputDecoration(hintText: "Max Power In KW"),
+                  )
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Close',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              filteredStations.length != stations.length ?
+              TextButton(
+                // style: ButtonStyle(),
+                onPressed: () {
+                  filteredStations = stations;
+                  setStationsMarkers();
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Remove Filter',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ): SizedBox(width: 0, height: 0) ,
+              TextButton(
+                // style: ButtonStyle(),
+                onPressed: savePreferences,
+                child: Text('Save'),
+              ),
+            ],
+          );
+        });
+  }
+
+  savePreferences() {
+    double minPower = double.tryParse(txtMinPower.text) ?? 0;
+    double maxpower = double.tryParse(txtMaxPower.text) ?? 0;
+    if (txtMinPower.text == '' || txtMaxPower.text == '') {
+      return;
+    }
+    filteredStations.clear();
+    stations.forEach((station) {
+      for (var port in station.ports) {
+        if (port.power >= minPower && port.power <= maxpower) {
+          filteredStations.add(station);
+        }
+        break;
+      }
+    });
+    _markers.clear();
+    updateUserLocation();
+    setStationsMarkers();
+    // log(filteredStations.length.toString());
+
+/*     log(_markers.length.toString());
+    txtMinPower.text = '';
+    txtMaxPower.text = ''; */
+    Navigator.pop(context);
   }
 }
