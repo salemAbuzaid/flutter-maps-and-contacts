@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:ui' as ui;
 import 'package:custom_info_window/custom_info_window.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:progetto_pilota/data/port.dart';
 import 'package:progetto_pilota/data/station.dart';
+import 'package:progetto_pilota/screens/login.dart';
 import 'package:progetto_pilota/shared/info_window.dart';
 import 'package:progetto_pilota/shared/menu_drawer.dart';
 import 'package:progetto_pilota/data/http_helper.dart';
@@ -72,9 +75,6 @@ class _MapScreenState extends State<MapScreen> {
         },
       );
     }
-/*     setState(() {
-      _markers;
-    }); */
   }
 
 // gets stations from the backend server
@@ -180,7 +180,20 @@ class _MapScreenState extends State<MapScreen> {
           title: Text('Map'),
           actions: [
             IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  FirebaseAuth.instance.signOut();
+                  log('Signed out ' +
+                      FirebaseAuth.instance.currentUser.toString());
+                  Navigator.popUntil(
+                    context,
+                    ModalRoute.withName('/'),
+                  );
+/*                   Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/'); */
+/*                   Navigator.of(context).push(
+                      MaterialPageRoute(builder: (((context) => Login())))); */
+                  // setState(() {});
+                },
                 icon: Icon(
                   Icons.person_rounded,
                   color: Colors.white,
@@ -201,6 +214,7 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 markers: Set<Marker>.of(_markers.values),
                 onCameraMove: ((position) {
+                  if (_customInfoWindowController.onCameraMove != null)
                   _customInfoWindowController.onCameraMove!();
                 }),
                 onTap: ((position) {
@@ -353,19 +367,20 @@ class _MapScreenState extends State<MapScreen> {
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
-              filteredStations.length != stations.length ?
-              TextButton(
-                // style: ButtonStyle(),
-                onPressed: () {
-                  filteredStations = stations;
-                  setStationsMarkers();
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  'Remove Filter',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ): SizedBox(width: 0, height: 0) ,
+              filteredStations.length != stations.length
+                  ? TextButton(
+                      // style: ButtonStyle(),
+                      onPressed: () {
+                        filteredStations = stations;
+                        setStationsMarkers();
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Remove Filter',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : SizedBox(width: 0, height: 0),
               TextButton(
                 // style: ButtonStyle(),
                 onPressed: savePreferences,
@@ -383,14 +398,14 @@ class _MapScreenState extends State<MapScreen> {
       return;
     }
     filteredStations.clear();
-    stations.forEach((station) {
+    for (var station in stations) {
       for (var port in station.ports) {
         if (port.power >= minPower && port.power <= maxpower) {
           filteredStations.add(station);
         }
         break;
       }
-    });
+    }
     _markers.clear();
     updateUserLocation();
     setStationsMarkers();

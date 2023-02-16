@@ -26,8 +26,8 @@ Widget getInfoWindow(BuildContext context, Station station) {
           height: double.infinity,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+            child: ListView(
+              // mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
                   alignment: Alignment.topLeft,
@@ -36,6 +36,7 @@ Widget getInfoWindow(BuildContext context, Station station) {
                   ),
                 ),
                 Container(
+                  padding: const EdgeInsets.only(top: 7.0),
                   alignment: Alignment.topLeft,
                   child: Text(
                     "Access restriction: ${station.accessRestriction}",
@@ -44,6 +45,7 @@ Widget getInfoWindow(BuildContext context, Station station) {
                 Row(
                   children: [
                     Container(
+                      padding: const EdgeInsets.only(top: 7.0),
                       alignment: Alignment.topLeft,
                       child: Text(
                         "Available ports: ${station.availablePorts()}/ ${station.ports.length}",
@@ -51,7 +53,7 @@ Widget getInfoWindow(BuildContext context, Station station) {
                     ),
                     Container(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 6.0),
+                        padding: const EdgeInsets.only(left: 6.0, top: 7.0),
                         child: Icon(
                           Icons.circle,
                           size: 17,
@@ -63,6 +65,7 @@ Widget getInfoWindow(BuildContext context, Station station) {
                   ],
                 ),
                 Container(
+                  padding: const EdgeInsets.only(top: 7.0),
                   alignment: Alignment.topLeft,
                   child: Text(
                     "Charging power: ${_getPowerList(station.ports)}",
