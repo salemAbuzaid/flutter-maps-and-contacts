@@ -182,17 +182,10 @@ class _MapScreenState extends State<MapScreen> {
             IconButton(
                 onPressed: () {
                   FirebaseAuth.instance.signOut();
-                  log('Signed out ' +
-                      FirebaseAuth.instance.currentUser.toString());
                   Navigator.popUntil(
                     context,
                     ModalRoute.withName('/'),
                   );
-/*                   Navigator.of(context).pop();
-                  Navigator.of(context).pushNamed('/'); */
-/*                   Navigator.of(context).push(
-                      MaterialPageRoute(builder: (((context) => Login())))); */
-                  // setState(() {});
                 },
                 icon: Icon(
                   Icons.person_rounded,
